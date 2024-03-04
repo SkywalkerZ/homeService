@@ -203,11 +203,14 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     customer_row RECORD;
+	pointer INTEGER;
     total_orders INTEGER;
     total_money_spent INTEGER;
     reward_points INTEGER;
 BEGIN
     -- Loop through each customer
+	pointer = 1;
+	DELETE FROM customer_loyalty;
     FOR customer_row IN SELECT customer_id FROM Customer LOOP
         -- Calculate total orders placed by the customer
         SELECT COUNT(order_id) INTO total_orders FROM Orders WHERE customer_id = customer_row.customer_id;
@@ -227,12 +230,12 @@ BEGIN
         END IF;
 
         -- Insert or update loyalty information for the customer
-        INSERT INTO Customer_Loyalty (customer_id, orders_placed, money_spent, points)
-        VALUES (customer_row.customer_id, total_orders, total_money_spent, reward_points);
+        INSERT INTO Customer_Loyalty (row_id, customer_id, orders_placed, money_spent, points)
+        VALUES (pointer,customer_row.customer_id, total_orders, total_money_spent, reward_points);
+		pointer = pointer +1;
     END LOOP;
 END;
 $$
-
 
 CALL calculate_customer_loyalty();
 ```
