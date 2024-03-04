@@ -1,7 +1,7 @@
 # homeService
 This project covers planning and creating a relational database in PostgreSQL for an online service system
 
-## Data-modeling
+## 1. Data-modeling
 
 The first step is to design an ER diagram to show entity and its relationships.
 ![Home Services ERD](https://github.com/SkywalkerZ/homeService/assets/6307592/8739cfe6-c827-4ff6-a29e-d7f4f0c5b357)
@@ -19,7 +19,7 @@ The first step is to design an ER diagram to show entity and its relationships.
 1. Each data type is thoroughly thought after to reduce unnecessary storage space.
 2. Each data type enforces a strict set of rules to be followed.
 
-## Schema-modeling
+## 2. Schema-modeling
 
 The second step is to create the schema w.r.t the above ERD diagram. Here we specify constraints to inforce certain logic in our database.
 
@@ -75,7 +75,7 @@ CREATE TABLE Orders (
     employee_id int   NOT NULL,
     feedback smallint   NOT NULL,
     status smallint   NOT NULL,
-	  created_at timestamp   NOT NULL,
+    created_at timestamp   NOT NULL,
     updated_at timestamp   NOT NULL,
 	CONSTRAINT unique_active_order_per_customer UNIQUE (customer_id, status) WHERE (status = (SELECT status_id FROM Status WHERE status = 'active')),
 	CONSTRAINT fk_Order_customer_id FOREIGN KEY (customer_id) REFERENCES Customer (customer_id),
@@ -100,4 +100,5 @@ CREATE TABLE Customer_Loyalty (
    1. In orders table, there is a unique constraint set on 2 columns to allow 1 order per customer is allowed to be in an active state.
    2. Once a customer deletes their profile, for data protection and privacy, all their order history and loyalty points are deleted.
   
-
+## 3. Data Insertion
+Using chatgpt, i created mock data and ingested it into tables using python.
