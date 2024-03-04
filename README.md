@@ -79,7 +79,7 @@ CREATE TABLE Orders (
     status smallint   NOT NULL,
     created_at timestamp   NOT NULL,
     updated_at timestamp   NOT NULL,
-	UNIQUE (customer_id, status),
+	UNIQUE (order_id, customer_id, status),
 	CONSTRAINT fk_Order_customer_id FOREIGN KEY (customer_id) REFERENCES Customer (customer_id) ON DELETE CASCADE,
 	CONSTRAINT fk_Order_order_type FOREIGN KEY (order_type) REFERENCES Order_Type (orderType_id) ON DELETE SET NULL,
 	CONSTRAINT fk_Order_employee_id FOREIGN KEY (employee_id) REFERENCES Employee (employee_id) ON DELETE SET NULL,
