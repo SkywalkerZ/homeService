@@ -103,4 +103,91 @@ CREATE TABLE Customer_Loyalty (
    2. Once a customer deletes their profile, for data protection and privacy, all their order history and loyalty points are deleted.
   
 ## 3. Data Insertion
-Using chatgpt, i created mock data and ingested it into tables using python.
+Using chatgpt, I created mock data and ingested it into tables using python.
+
+### Data
+The data files (.csv) can  be found in the repository.
+
+### Code
+```
+import psycopg2
+conn = psycopg2.connect(
+    host='localhost',
+    dbname= 'HomeServices',
+    user='postgres',
+    password='1234567',
+    port='5432'
+)
+
+cursor = conn.cursor()
+
+import os
+import pandas as pd
+
+df = pd.read_csv(r"C:\xyz\customer.csv")
+for row in df.itertuples():
+    cursor.execute("INSERT INTO public.customer(first_name,last_name,email_id,phone_no,address1,address2,state,pin_code,customer_rating,last_login,created_at,updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                              (row.first_name,
+                              row.last_name,
+                              row.email_id,
+                              row.phone_no,
+                              row.address1,
+                              row.address2,
+                              row.state,
+                              row.pin_code,
+                              row.customer_rating,
+                              row.last_login,
+                              row.created_at,
+                              row.updated_at))
+conn.commit()
+
+df = pd.read_csv(r"C:\xyz\employee.csv")
+for row in df.itertuples():
+    cursor.execute("INSERT INTO public.employee(first_name,last_name,govt_id,phone_no,employee_rating,created_at,updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s)",
+                              (row.first_name,
+                              row.last_name,
+                              row.govt_id,
+                              row.phone_no,
+                              row.employee_rating,
+                              row.created_at,
+                              row.updated_at))
+conn.commit()
+
+df = pd.read_csv(r"C:\xyz\ordertype.csv")
+for row in df.itertuples():
+    cursor.execute("INSERT INTO public.order_Type(orderType_desc,orderType_price) VALUES (%s,%s)",
+                              (row.orderType_desc,
+                              row.orderType_price))
+conn.commit()
+
+df = pd.read_csv(r"C:\xyz\rating.csv")
+for row in df.itertuples():
+    cursor.execute(f"INSERT INTO public.rating(rating_desc) VALUES ('{row.rating_desc}')")
+conn.commit()
+
+df = pd.read_csv(r"C:\xyz\status.csv")
+for row in df.itertuples():
+    cursor.execute(f"INSERT INTO public.status(status) VALUES ('{row.status}')")
+conn.commit()
+
+df = pd.read_csv(r"C:\xyz\orders.csv")
+for row in df.itertuples():
+    cursor.execute("INSERT INTO public.orders(customer_id,order_type,employee_id,feedback,status,created_at,updated_at) VALUES (%s,%s,%s,%s,%s,%s,%s)",
+                              (row.customer_id,
+                              row.order_type,
+                              row.employee_id,
+                              row.feedback,
+                              row.status,
+                              row.created_at,
+                              row.updated_at))
+conn.commit()
+
+cursor.close()
+conn.close()
+
+```
+
+### Result
+Attached are the output of select queries of respective tables:
+
+
