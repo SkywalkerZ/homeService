@@ -187,7 +187,54 @@ conn.close()
 
 ```
 
-### Result
-Attached are the output of select queries of respective tables:
+### Stored Procedure
+
+The table customer_loyalty will be populated based on their order history, and points will be awareded based on that.
+The points calculation is as follows:
+1. For customers with total orders below 20 get 15% of total money spent as reward points.
+2. For customer with total orders below 50 get 20% of total money spent as reward points.
+3. For customer with total orders above 100 get 25% of total money spent as reward points.
+
+The following stored procedure populates all the columns except points:
+
+```
+CREATE OR REPLACE PROCEDURE calculate_customer_loyalty()
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    customer_row RECORD;
+    total_orders INTEGER;
+    total_money_spent INTEGER;
+    reward_points INTEGER;
+BEGIN
+    -- Loop through each customer
+    FOR customer_row IN SELECT customer_id FROM Customer LOOP
+        -- Calculate total orders placed by the customer
+        SELECT COUNT(order_id) INTO total_orders FROM Orders WHERE customer_id = customer_row.customer_id;
+
+        -- Calculate total money spent by the customer
+        SELECT SUM(orderType_price) INTO total_money_spent FROM Orders
+        INNER JOIN Order_Type ON Orders.order_type = Order_Type.orderType_id
+        WHERE customer_id = customer_row.customer_id;
+
+        -- Calculate reward points based on total orders and money spent
+        IF total_orders < 20 THEN
+            reward_points := total_money_spent * 0.15;
+        ELSIF total_orders < 50 THEN
+            reward_points := total_money_spent * 0.20;
+        ELSE
+            reward_points := total_money_spent * 0.25;
+        END IF;
+
+        -- Insert or update loyalty information for the customer
+        INSERT INTO Customer_Loyalty (customer_id, orders_placed, money_spent, points)
+        VALUES (customer_row.customer_id, total_orders, total_money_spent, reward_points);
+    END LOOP;
+END;
+$$
+
+
+CALL calculate_customer_loyalty();
+```
 
 
