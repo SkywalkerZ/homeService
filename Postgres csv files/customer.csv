@@ -1,0 +1,11 @@
+first_name,last_name,email_id,phone_no,address1,address2,state,pin_code,customer_rating,last_login,created_at,updated_at
+John,Doe,john.doe@example.com,1234567890,123 Main St,,California,12345,4.5,2024-03-04 12:00:00,2024-03-04 12:00:00,2024-03-04 12:00:00
+Jane,Smith,jane.smith@example.com,9876543210,456 Elm St,,New York,54321,4.2,2024-03-04 12:00:00,2024-03-04 12:00:00,2024-03-04 12:00:00
+Michael,Johnson,michael.johnson@example.com,5551234567,789 Oak St,,Texas,67890,4.7,2024-03-04 12:00:00,2024-03-04 12:00:00,2024-03-04 12:00:00
+Emily,Brown,emily.brown@example.com,4449876543,321 Pine St,,Florida,45678,4.0,2024-03-04 12:00:00,2024-03-04 12:00:00,2024-03-04 12:00:00
+David,Lee,david.lee@example.com,9998887776,654 Cedar St,,Ohio,98765,4.9,2024-03-04 12:00:00,2024-03-04 12:00:00,2024-03-04 12:00:00
+Sarah,Garcia,sarah.garcia@example.com,1112223334,987 Birch St,,Illinois,23456,4.3,2024-03-04 12:00:00,2024-03-04 12:00:00,2024-03-04 12:00:00
+Chris,Martinez,chris.martinez@example.com,7778889990,654 Willow St,,Michigan,76543,4.6,2024-03-04 12:00:00,2024-03-04 12:00:00,2024-03-04 12:00:00
+Amanda,Lopez,amanda.lopez@example.com,6665554443,321 Maple St,,Washington,54321,4.2,2024-03-04 12:00:00,2024-03-04 12:00:00,2024-03-04 12:00:00
+Daniel,Hernandez,daniel.hernandez@example.com,2223334445,456 Pineapple St,,Arizona,12345,4.8,2024-03-04 12:00:00,2024-03-04 12:00:00,2024-03-04 12:00:00
+Laura,Perez,laura.perez@example.com,3334445556,789 Peach St,,Georgia,67890,4.1,2024-03-04 12:00:00,2024-03-04 12:00:00,2024-03-04 12:00:00
