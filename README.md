@@ -29,8 +29,8 @@ CREATE TABLE Customer (
     customer_id serial PRIMARY KEY
     first_name varchar(20)   NOT NULL,
     last_name varchar(20)   NOT NULL,
-    email_id varchar(50)   NOT NULL UNIQUE,
-    phone_no varchar(15)   NOT NULL UNIQUE,
+    email_id varchar(50)   NOT NULL,
+    phone_no varchar(15)   NOT NULL,
     address1 varchar(50)   NOT NULL,
     address2 varchar(50)   NULL,
     state varchar(20)   NOT NULL,
@@ -38,8 +38,10 @@ CREATE TABLE Customer (
     customer_rating real   NOT NULL,
     last_login timestamp   NOT NULL,
     created_at timestamp   NOT NULL,
-    updated_at timestamp   NOT NULL
+    updated_at timestamp   NOT NULL,
+	UNIQUE(email_id,phone_no)
 );
+
 
 CREATE TABLE Rating (
     rating_id serial   NOT NULL PRIMARY KEY,
