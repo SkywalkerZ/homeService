@@ -80,7 +80,7 @@ CREATE TABLE Orders (
     created_at timestamp   NOT NULL,
     updated_at timestamp   NOT NULL,
 	CONSTRAINT unique_active_order_per_customer UNIQUE (customer_id, status) WHERE (status = (SELECT status_id FROM Status WHERE status = 'active')),
-	CONSTRAINT fk_Order_customer_id FOREIGN KEY (customer_id) REFERENCES Customer (customer_id),
+	CONSTRAINT fk_Order_customer_id FOREIGN KEY (customer_id) REFERENCES Customer (customer_id) ON DELETE CASCADE,
 	CONSTRAINT fk_Order_order_type FOREIGN KEY (order_type) REFERENCES Order_Type (orderType_id),
 	CONSTRAINT fk_Order_employee_id FOREIGN KEY (employee_id) REFERENCES Employee (employee_id),
 	CONSTRAINT fk_Order_feedback FOREIGN KEY (feedback) REFERENCES Rating (rating_id),
@@ -93,7 +93,7 @@ CREATE TABLE Customer_Loyalty (
     orders_placed int   NOT NULL,
     money_spent int   NOT NULL,
     points int   NOT NULL,
-	CONSTRAINT fk_Customer_Loyalty_customer_id FOREIGN KEY (customer_id) REFERENCES Customer (customer_id)
+	CONSTRAINT fk_Customer_Loyalty_customer_id FOREIGN KEY (customer_id) REFERENCES Customer (customer_id) ON DELETE CASCADE
 );
 ```
 
