@@ -336,31 +336,23 @@ CALL calculate_customer_loyalty();
 To implement the above logic, we need to use functions and procedures.
 
 ```
-CREATE OR REPLACE PROCEDURE pr_update_order_status()
+CREATE OR REPLACE PROCEDURE update_order_status()
+LANGUAGE plpgsql
 AS $$
 DECLARE
-	order_row RECORD;
-	v_status INTEGER;
-	v_updated_at TIMESTAMP;
+    order_row RECORD;
 BEGIN
-	FOR order_row IN SELECT order_id FROM orders LOOP
-		SELECT orders.status,orders.updated_at
-		INTO v_status,v_updated_at
-		FROM orders WHERE orders.status IN (1,2);
-		
-		IF v_status = 1 AND EXTRACT('day' FROM NOW())- EXTRACT('day' FROM v_updated_at) = 1 THEN
-			v_status = 2, v_updated_at = NOW();
-			UPDATE orders SET status = v_status WHERE status =v_status;
-			UPDATE orders SET updated_at = v_updated_at WHERE status = v_status;
-		ELSIF v_status = 2 AND EXTRACT('day' FROM NOW())- EXTRACT('day' FROM v_updated_at) = 7 THEN
-			v_status = 3, v_updated_at = NOW();
-			UPDATE orders SET status = v_status WHERE status =v_status;
-			UPDATE orders SET updated_at = v_updated_at WHERE status = v_status;
-		END IF;
-		
-	END LOOP;
+    -- Move pending orders to confirmed if they are more than 1 day old
+    UPDATE Orders
+    SET status = 2, updated_at = NOW()
+    WHERE status = 1 AND (EXTRACT('day' FROM updated_at )  - EXTRACT('day' FROM created_at)) = 1;
+
+    -- Move confirmed orders to completed if they have stayed in that status for 7 days
+    UPDATE Orders
+    SET status = 3, updated_at = NOW()
+    WHERE status = 2 AND (EXTRACT('day' FROM updated_at )  - EXTRACT('day' FROM created_at)) = 7;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 CALL pr_update_order_status();
 ```
