@@ -284,8 +284,58 @@ UPDATE customer_loyalty SET created_at = NOW() WHERE created_at IS NULL RETURNIN
 Lets also modify the stored procedure to include the new column:
 
 ```
+CREATE OR REPLACE PROCEDURE calculate_customer_loyalty()
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    customer_row RECORD;
+	pointer INTEGER;
+    total_orders INTEGER;
+    total_money_spent INTEGER;
+    reward_points INTEGER;
+BEGIN
+    -- Loop through each customer
+	pointer = 1;
+	DELETE FROM customer_loyalty;
+    FOR customer_row IN SELECT customer_id FROM Customer LOOP
+        -- Calculate total orders placed by the customer
+        SELECT COUNT(order_id) INTO total_orders FROM Orders WHERE customer_id = customer_row.customer_id;
 
+        -- Calculate total money spent by the customer
+        SELECT SUM(orderType_price) INTO total_money_spent FROM Orders
+        INNER JOIN Order_Type ON Orders.order_type = Order_Type.orderType_id
+        WHERE customer_id = customer_row.customer_id;
+
+        -- Calculate reward points based on total orders and money spent
+        IF total_orders < 20 THEN
+            reward_points := total_money_spent * 0.15;
+        ELSIF total_orders < 50 THEN
+            reward_points := total_money_spent * 0.20;
+        ELSE
+            reward_points := total_money_spent * 0.25;
+        END IF;
+
+        -- Insert or update loyalty information for the customer
+        INSERT INTO Customer_Loyalty (row_id, customer_id, orders_placed, money_spent, points, created_at)
+        VALUES (pointer,customer_row.customer_id, total_orders, total_money_spent, reward_points, NOW());
+		pointer = pointer +1;
+    END LOOP;
+END;
+$$
+
+CALL calculate_customer_loyalty();
 ```
+
+## Implement Business Logic
+
+1. If order is more than 1 day old, and if status is 1 (or Pending), move it to 2 (or Confirmed), if not done so.
+2. If order status is 2 (or Confirmed) and has stayed in that status for 7 days, move it to 3 (or Completed), if not done so.
+3. Once order is completed and feedback submitted, refresh employee's rating.
+
+To implement the above logic, we need to use functions and procedures.
+
+
+
 
 
 
