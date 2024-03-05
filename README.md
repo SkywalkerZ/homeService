@@ -329,12 +329,14 @@ CALL calculate_customer_loyalty();
 
 ## Implement Business Logic
 
+### Logic
 1. If order is more than 1 day old, and if status is 1 (or Pending), move it to 2 (or Confirmed), if not done so.
 2. If order status is 2 (or Confirmed) and has stayed in that status for 7 days, move it to 3 (or Completed), if not done so.
 3. Once order is completed and feedback submitted, refresh employee's rating.
 
-To implement the above logic, we need to use functions and procedures.
+To implement the above logic (1,2), we need to use a procedure.
 
+### Code 
 ```
 CREATE OR REPLACE PROCEDURE update_order_status()
 LANGUAGE plpgsql
@@ -345,17 +347,56 @@ BEGIN
     -- Move pending orders to confirmed if they are more than 1 day old
     UPDATE Orders
     SET status = 2, updated_at = NOW()
-    WHERE status = 1 AND (EXTRACT('day' FROM updated_at )  - EXTRACT('day' FROM created_at)) = 1;
+    WHERE status = 1 AND (EXTRACT('day' FROM NOW() )  - EXTRACT('day' FROM created_at)) = 1;
 
     -- Move confirmed orders to completed if they have stayed in that status for 7 days
     UPDATE Orders
     SET status = 3, updated_at = NOW()
-    WHERE status = 2 AND (EXTRACT('day' FROM updated_at )  - EXTRACT('day' FROM created_at)) = 7;
+    WHERE status = 2 AND (EXTRACT('day' FROM NOW() )  - EXTRACT('day' FROM created_at)) = 7;
 END;
 $$;
 
-CALL pr_update_order_status();
+CALL update_order_status();
 ```
+
+To implement the above logic (3), we need to use a procedure.
+
+```
+CREATE OR REPLACE PROCEDURE update_employee_rating()
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    order_row RECORD;
+	v_employee INTEGER;
+	rating_sum INTEGER;
+	total_completed_orders INTEGER;
+	rating REAL;
+BEGIN
+	FOR order_row IN SELECT order_id FROM orders LOOP
+		SELECT employee_id, SUM(feedback), COUNT(status) 
+		INTO v_employee, rating_sum, total_completed_orders
+		FROM orders WHERE status = 3 AND order_id = order_row.order_id GROUP BY employee_id;
+		
+		rating = rating_sum/total_completed_orders;
+		
+		UPDATE employee SET employee_rating = rating WHERE employee_id = v_employee;
+		UPDATE employee SET updated_at = NOW() WHERE employee_id = v_employee;
+	END LOOP;
+END;
+$$;
+
+CALL update_employee_rating();
+```
+
+### Result
+
+1. Order Table (with updated status)
+
+![image](https://github.com/SkywalkerZ/homeService/assets/6307592/ae59c683-5d5c-4d42-bfba-1e1408df78bc)
+
+2. Employee Table (with updated rating)
+
+![image](https://github.com/SkywalkerZ/homeService/assets/6307592/f1dec96f-5154-42f4-b447-80af8ee3c2ac)
 
 
 
