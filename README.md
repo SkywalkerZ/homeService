@@ -281,7 +281,7 @@ UPDATE customer_loyalty SET created_at = NOW() WHERE created_at IS NULL RETURNIN
 
 ![image](https://github.com/SkywalkerZ/homeService/assets/6307592/53f8a0b2-5928-4419-a3f3-3e336ef00662)
 
-Lets also modify the stored procedure to include the new column:
+Lets also modify the stored procedure to include the new column as well as only consider orders with status 'completed':
 
 ```
 CREATE OR REPLACE PROCEDURE calculate_customer_loyalty()
@@ -289,22 +289,19 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     customer_row RECORD;
-	pointer INTEGER;
     total_orders INTEGER;
     total_money_spent INTEGER;
     reward_points INTEGER;
 BEGIN
     -- Loop through each customer
-	pointer = 1;
-	DELETE FROM customer_loyalty;
     FOR customer_row IN SELECT customer_id FROM Customer LOOP
-        -- Calculate total orders placed by the customer
-        SELECT COUNT(order_id) INTO total_orders FROM Orders WHERE customer_id = customer_row.customer_id;
+        -- Calculate total orders placed by the customer with status 3
+        SELECT COUNT(order_id) INTO total_orders FROM Orders WHERE customer_id = customer_row.customer_id AND status = 3;
 
-        -- Calculate total money spent by the customer
-        SELECT SUM(orderType_price) INTO total_money_spent FROM Orders
+        -- Calculate total money spent by the customer on orders with status 3
+        SELECT COALESCE(SUM(orderType_price), 0) INTO total_money_spent FROM Orders
         INNER JOIN Order_Type ON Orders.order_type = Order_Type.orderType_id
-        WHERE customer_id = customer_row.customer_id;
+        WHERE customer_id = customer_row.customer_id AND status = 3;
 
         -- Calculate reward points based on total orders and money spent
         IF total_orders < 20 THEN
@@ -316,15 +313,19 @@ BEGIN
         END IF;
 
         -- Insert or update loyalty information for the customer
-        INSERT INTO Customer_Loyalty (row_id, customer_id, orders_placed, money_spent, points, created_at)
-        VALUES (pointer,customer_row.customer_id, total_orders, total_money_spent, reward_points, NOW());
-		pointer = pointer +1;
+        INSERT INTO Customer_Loyalty (customer_id, orders_placed, money_spent, points, created_at)
+        VALUES (customer_row.customer_id, total_orders, total_money_spent, reward_points, NOW())
+        ON CONFLICT (customer_id) DO UPDATE
+        SET orders_placed = EXCLUDED.orders_placed, money_spent = EXCLUDED.money_spent, points = EXCLUDED.points;
     END LOOP;
 END;
-$$
+$$;
 
 CALL calculate_customer_loyalty();
 ```
+
+![image](https://github.com/SkywalkerZ/homeService/assets/6307592/8cbb08a6-71d4-4026-9578-bfce914e1dac)
+
 
 ## Implement Business Logic
 
@@ -334,8 +335,35 @@ CALL calculate_customer_loyalty();
 
 To implement the above logic, we need to use functions and procedures.
 
+```
+CREATE OR REPLACE PROCEDURE pr_update_order_status()
+AS $$
+DECLARE
+	order_row RECORD;
+	v_status INTEGER;
+	v_updated_at TIMESTAMP;
+BEGIN
+	FOR order_row IN SELECT order_id FROM orders LOOP
+		SELECT orders.status,orders.updated_at
+		INTO v_status,v_updated_at
+		FROM orders WHERE orders.status IN (1,2);
+		
+		IF v_status = 1 AND EXTRACT('day' FROM NOW())- EXTRACT('day' FROM v_updated_at) = 1 THEN
+			v_status = 2, v_updated_at = NOW();
+			UPDATE orders SET status = v_status WHERE status =v_status;
+			UPDATE orders SET updated_at = v_updated_at WHERE status = v_status;
+		ELSIF v_status = 2 AND EXTRACT('day' FROM NOW())- EXTRACT('day' FROM v_updated_at) = 7 THEN
+			v_status = 3, v_updated_at = NOW();
+			UPDATE orders SET status = v_status WHERE status =v_status;
+			UPDATE orders SET updated_at = v_updated_at WHERE status = v_status;
+		END IF;
+		
+	END LOOP;
+END;
+$$ LANGUAGE plpgsql;
 
-
+CALL pr_update_order_status();
+```
 
 
 
