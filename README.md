@@ -189,13 +189,13 @@ conn.close()
 
 ### Stored Procedure
 
-The table customer_loyalty will be populated based on their order history, and points will be awareded based on that.
+The table customer_loyalty should populate based on their order history, and points will be awareded based on that.
 The points calculation is as follows:
 1. For customers with total orders below 20 get 15% of total money spent as reward points.
 2. For customer with total orders below 50 get 20% of total money spent as reward points.
 3. For customer with total orders above 100 get 25% of total money spent as reward points.
 
-The following stored procedure populates all the columns except points:
+The following stored procedure populates all the columns:
 
 ```
 CREATE OR REPLACE PROCEDURE calculate_customer_loyalty()
@@ -239,5 +239,48 @@ $$
 
 CALL calculate_customer_loyalty();
 ```
+
+### Screenshots
+
+1. Customer Table:
+   ![image](https://github.com/SkywalkerZ/homeService/assets/6307592/507dcf25-e719-474d-9c46-29f10713e8ce)
+
+2. Employee Table:
+   ![image](https://github.com/SkywalkerZ/homeService/assets/6307592/05c46101-aa41-472d-bb08-54bb3b613c0d)
+
+3. Order Type Table:
+   ![image](https://github.com/SkywalkerZ/homeService/assets/6307592/fb31c455-691f-460d-8da2-43ede3a370f9)
+
+4. Rating Table:
+   ![image](https://github.com/SkywalkerZ/homeService/assets/6307592/0d24ea2d-bf86-4e3d-8dd8-d478540948f1)
+
+5. Status Table:
+   ![image](https://github.com/SkywalkerZ/homeService/assets/6307592/11836010-1904-4587-8ba1-91858768ceb5)
+
+6. Orders Table:
+   ![image](https://github.com/SkywalkerZ/homeService/assets/6307592/6b907edb-912f-44ae-80fa-4d3217e62baa)
+
+7. Loyalty Table:
+   ![image](https://github.com/SkywalkerZ/homeService/assets/6307592/f89e04d0-3178-469b-b94d-4ca2e7101bfe)
+
+## Schema Updates
+
+Turns out, customer_loyalty table has no date columns. Lets fix that. To do so, we need to ALTER and UPDATE the table.
+
+```
+ALTER TABLE customer_loyalty ADD COLUMN created_at TIMESTAMP;
+UPDATE customer_loyalty SET created_at = NOW() WHERE created_at IS NULL RETURNING *;
+```
+
+![image](https://github.com/SkywalkerZ/homeService/assets/6307592/53f8a0b2-5928-4419-a3f3-3e336ef00662)
+
+Lets also modify the stored procedure to include the new column:
+
+```
+
+```
+
+
+
 
 
